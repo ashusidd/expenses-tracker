@@ -4,7 +4,7 @@ import { createContext, useEffect, useState } from "react";
 export const GlobalContext = createContext();
 
 export const GlobalProvider = ({ children }) => {
-    // Persistent States
+    // Persistent States (Data)
     const [transactions, setTransactions] = useState(
         JSON.parse(localStorage.getItem('transactions')) || []
     );
@@ -12,15 +12,21 @@ export const GlobalProvider = ({ children }) => {
         JSON.parse(localStorage.getItem('groups')) || []
     );
 
-    // UI & Session Control States
-    const [groupName, setGroupName] = useState("");
-    const [isGroupActive, setIsGroupActive] = useState(false);
+    // UI & Session Control States 
+    const [groupName, setGroupName] = useState(
+        localStorage.getItem('groupName') || ""
+    );
+    const [isGroupActive, setIsGroupActive] = useState(
+        JSON.parse(localStorage.getItem('isGroupActive')) || false
+    );
 
-    // 2. Sync with LocalStorage (Auto-save whenever data changes)
+    // 2. Sync with LocalStorage (Auto-save everything)
     useEffect(() => {
         localStorage.setItem('transactions', JSON.stringify(transactions));
         localStorage.setItem('groups', JSON.stringify(groups));
-    }, [transactions, groups]);
+        localStorage.setItem('groupName', groupName);
+        localStorage.setItem('isGroupActive', JSON.stringify(isGroupActive));
+    }, [transactions, groups, groupName, isGroupActive]);
 
     // 3. Actions: Transactions (Add/Delete)
     const addTransaction = (newTrans) => {
@@ -37,7 +43,7 @@ export const GlobalProvider = ({ children }) => {
 
         const newGroup = {
             id: Date.now(),
-            name: name || "Untitled Group",
+            name: name || groupName || "Untitled Group",
             items: transactions,
             total: transactions.reduce((acc, t) => acc + t.amount, 0),
             date: new Date().toLocaleDateString('en-GB')
@@ -45,6 +51,8 @@ export const GlobalProvider = ({ children }) => {
 
         setGroups([newGroup, ...groups]);
         setTransactions([]);
+        setGroupName("");
+        setIsGroupActive(false);
     };
 
     const deleteGroup = (id) => {
