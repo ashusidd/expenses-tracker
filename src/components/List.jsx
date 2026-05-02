@@ -24,9 +24,8 @@ export const List = () => {
 
     return (
         <div className="mt-8 space-y-10 animate-fade-in">
-            {/* 1. ⚡ एक्टिव खर्चे (Premium Active Batch UI) */}
             {isGroupActive && (
-                <section className="bg-white rounded-3xl overflow-hidden shadow-2xl shadow-indigo-100 border border-indigo-50 transition-all duration-500 animate-zoom-in">
+                <section className="bg-white rounded-3xl overflow-hidden shadow-1xl shadow-indigo-100 border border-indigo-50 transition-all duration-500 animate-zoom-in">
                     {/* Header */}
                     <div className="bg-indigo-600 px-6 py-4 flex justify-between items-center bg-gradient-to-r from-indigo-600 to-violet-600">
                         <h2 className="text-white font-bold tracking-tight flex items-center gap-2">
@@ -53,7 +52,7 @@ export const List = () => {
                                         </span>
                                         <button
                                             onClick={() => deleteTransaction(t.id)}
-                                            className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-2 bg-gray-50 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all duration-300"
+                                            className="bg-white text-slate-300 hover:text-red-500 hover:shadow-md w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer"
                                             title="Remove item"
                                         >
                                             ✕
@@ -83,7 +82,7 @@ export const List = () => {
                 </section>
             )}
 
-            {/* 2. 📁 हिस्ट्री वाले ग्रुप्स (Responsive Grid Layout) */}
+            {/* 2. History Group(Responsive Grid Layout) */}
             <section className="space-y-6">
                 <div className="flex items-center gap-4 px-1">
                     <h2 className="text-slate-400 font-black text-[10px] uppercase tracking-[0.3em] whitespace-nowrap">Saved History</h2>
@@ -97,14 +96,14 @@ export const List = () => {
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-slide-in-bottom">
                         {groups.map(group => (
-                            <div key={group.id} className="bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
-                                <div className="p-4 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
+                            <div key={group.id} className="bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group overflow-hidden">
+                                <div className="p-4 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
                                     <span className="font-bold text-slate-700 truncate max-w-[180px] flex items-center gap-2">
                                         <span className="text-sm">📁</span> {group.name}
                                     </span>
                                     <button
                                         onClick={() => window.confirm("Delete this group history?") && deleteGroup(group.id)}
-                                        className="bg-white text-slate-300 hover:text-red-500 hover:shadow-md w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer"
+                                        className="bg-blue-300 text-slate-600 hover:text-red-500 hover:shadow-md w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer"
                                     >
                                         ✕
                                     </button>
@@ -113,7 +112,7 @@ export const List = () => {
                                 <div className="p-5">
                                     <ul className="space-y-2 mb-4">
                                         {group.items.slice(0, 3).map(item => (
-                                            <li key={item.id} className="flex justify-between text-[11px] text-slate-500 font-medium italic">
+                                            <li key={item.id} className="flex justify-between text-[11px] text-slate-700 font-medium italic">
                                                 <span>{item.text}</span>
                                                 <span className={item.amount < 0 ? "text-red-400" : "text-emerald-400"}>₹{item.amount}</span>
                                             </li>
@@ -128,7 +127,7 @@ export const List = () => {
                                             <p className="text-[9px] text-slate-400 font-black uppercase tracking-tighter leading-none">Total Value</p>
                                             <p className="text-2xl font-black text-slate-900 font-mono tracking-tighter">₹{group.total}</p>
                                         </div>
-                                        <span className="text-[9px] font-bold text-slate-300 bg-slate-50 px-2 py-1 rounded-md">{group.date}</span>
+                                        <span className="text-[9px] font-bold text-slate-500 bg-slate-50 px-2 py-1 rounded-md">{group.date}</span>
                                     </div>
                                 </div>
                             </div>
