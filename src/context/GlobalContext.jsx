@@ -7,8 +7,6 @@ export const GlobalProvider = ({ children }) => {
     const [groups, setGroups] = useState(JSON.parse(localStorage.getItem('groups')) || []);
     const [groupName, setGroupName] = useState(localStorage.getItem('groupName') || "");
     const [isGroupActive, setIsGroupActive] = useState(JSON.parse(localStorage.getItem('isGroupActive')) || false);
-
-    // NEW STATE: ट्रैक करने के लिए कि क्या हम पुराना ग्रुप एडिट कर रहे हैं
     const [editingGroupId, setEditingGroupId] = useState(JSON.parse(localStorage.getItem('editingGroupId')) || null);
 
     useEffect(() => {
@@ -22,11 +20,10 @@ export const GlobalProvider = ({ children }) => {
     const addTransaction = (newTrans) => setTransactions([newTrans, ...transactions]);
     const deleteTransaction = (id) => setTransactions(transactions.filter((t) => t.id !== id));
 
-    // NEW FUNCTION: पुराने ग्रुप को वापस Live करना
     const editGroup = (group) => {
         setGroupName(group.name);
-        setTransactions(group.items); // पुराने आइटम्स को लाइव लिस्ट में डालना
-        setEditingGroupId(group.id); // ID सेव करना ताकि ओवरराइट कर सकें
+        setTransactions(group.items);
+        setEditingGroupId(group.id);
         setIsGroupActive(true);
     };
 
@@ -34,7 +31,7 @@ export const GlobalProvider = ({ children }) => {
         if (transactions.length === 0) return;
 
         const updatedData = {
-            id: editingGroupId || Date.now(), // अगर एडिट कर रहे हैं तो पुरानी ID, वरना नई
+            id: editingGroupId || Date.now(),
             name: groupName || "Untitled Group",
             items: transactions,
             total: transactions.reduce((acc, t) => acc + t.amount, 0),
@@ -42,7 +39,6 @@ export const GlobalProvider = ({ children }) => {
         };
 
         if (editingGroupId) {
-            // REWRITE LOGIC: पुराने वाले को हटाकर नया अपडेटेड डेटा डालना
             setGroups(groups.map(g => g.id === editingGroupId ? updatedData : g));
         } else {
             setGroups([updatedData, ...groups]);
@@ -61,7 +57,7 @@ export const GlobalProvider = ({ children }) => {
         <GlobalContext.Provider value={{
             transactions, groups, groupName, setGroupName, isGroupActive, setIsGroupActive,
             addTransaction, deleteTransaction, finalizeGroup, deleteGroup,
-            editGroup, editingGroupId // इन दोनों को एक्सपोर्ट करना न भूलें
+            editGroup, editingGroupId
         }}>
             {children}
         </GlobalContext.Provider>

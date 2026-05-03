@@ -18,7 +18,7 @@ export const AddForm = () => {
         setText(""); setAmount('');
     };
 
-    // Phase 1: Setup Group Name (Glassmorphism Look)
+    // Phase 1: Setup Group Name
     if (!isGroupActive) {
         return (
             <div className="mt-8 animate-zoom-in">
@@ -47,13 +47,12 @@ export const AddForm = () => {
         );
     }
 
-    // Phase 2: Add Expenses (Modern Clean UI)
+    // Phase 2: Add Expenses
     return (
         <form
             onSubmit={handleAdd}
             className="mt-8 bg-white p-6 rounded-3xl shadow-2xl relative"
         >
-            {/* Background Decoration */}
             <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-slate-50 rounded-full blur-3xl opacity-50" />
 
             <header className="flex justify-between items-center mb-6 relative">

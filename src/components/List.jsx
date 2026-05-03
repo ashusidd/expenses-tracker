@@ -12,14 +12,14 @@ export const List = () => {
         setGroupName,
         deleteGroup,
         deleteTransaction,
-        editGroup, // नया फंक्शन context से
-        editingGroupId // स्टेट context से
+        editGroup,
+        editingGroupId
     } = useContext(GlobalContext);
 
     const activeTotal = (transactions || []).reduce((acc, item) => (acc += item.amount), 0).toFixed(2);
 
     const handleFinalize = () => {
-        finalizeGroup(); // अब नाम भेजने की ज़रूरत नहीं, context खुद संभाल लेगा
+        finalizeGroup();
     };
 
     return (
@@ -32,7 +32,6 @@ export const List = () => {
                             <span className="p-1.5 bg-white/20 rounded-lg backdrop-blur-md">📁</span>
                             {groupName}
                         </h2>
-                        {/* अगर एडिट कर रहे हैं तो RE-EDITING दिखाएँ वरना LIVE */}
                         <span className="bg-white/20 text-white text-[10px] px-2.5 py-1 rounded-md font-black animate-pulse tracking-widest">
                             {editingGroupId ? "RE-EDITING" : "LIVE"}
                         </span>
