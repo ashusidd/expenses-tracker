@@ -1,82 +1,67 @@
 import { createContext, useEffect, useState } from "react";
 
-// 1. Context Initialize
 export const GlobalContext = createContext();
 
 export const GlobalProvider = ({ children }) => {
-    // Persistent States (Data)
-    const [transactions, setTransactions] = useState(
-        JSON.parse(localStorage.getItem('transactions')) || []
-    );
-    const [groups, setGroups] = useState(
-        JSON.parse(localStorage.getItem('groups')) || []
-    );
+    const [transactions, setTransactions] = useState(JSON.parse(localStorage.getItem('transactions')) || []);
+    const [groups, setGroups] = useState(JSON.parse(localStorage.getItem('groups')) || []);
+    const [groupName, setGroupName] = useState(localStorage.getItem('groupName') || "");
+    const [isGroupActive, setIsGroupActive] = useState(JSON.parse(localStorage.getItem('isGroupActive')) || false);
 
-    // UI & Session Control States 
-    const [groupName, setGroupName] = useState(
-        localStorage.getItem('groupName') || ""
-    );
-    const [isGroupActive, setIsGroupActive] = useState(
-        JSON.parse(localStorage.getItem('isGroupActive')) || false
-    );
+    // NEW STATE: ट्रैक करने के लिए कि क्या हम पुराना ग्रुप एडिट कर रहे हैं
+    const [editingGroupId, setEditingGroupId] = useState(JSON.parse(localStorage.getItem('editingGroupId')) || null);
 
-    // 2. Sync with LocalStorage (Auto-save everything)
     useEffect(() => {
         localStorage.setItem('transactions', JSON.stringify(transactions));
         localStorage.setItem('groups', JSON.stringify(groups));
         localStorage.setItem('groupName', groupName);
         localStorage.setItem('isGroupActive', JSON.stringify(isGroupActive));
-    }, [transactions, groups, groupName, isGroupActive]);
+        localStorage.setItem('editingGroupId', JSON.stringify(editingGroupId));
+    }, [transactions, groups, groupName, isGroupActive, editingGroupId]);
 
-    // 3. Actions: Transactions (Add/Delete)
-    const addTransaction = (newTrans) => {
-        setTransactions([newTrans, ...transactions]);
+    const addTransaction = (newTrans) => setTransactions([newTrans, ...transactions]);
+    const deleteTransaction = (id) => setTransactions(transactions.filter((t) => t.id !== id));
+
+    // NEW FUNCTION: पुराने ग्रुप को वापस Live करना
+    const editGroup = (group) => {
+        setGroupName(group.name);
+        setTransactions(group.items); // पुराने आइटम्स को लाइव लिस्ट में डालना
+        setEditingGroupId(group.id); // ID सेव करना ताकि ओवरराइट कर सकें
+        setIsGroupActive(true);
     };
 
-    const deleteTransaction = (id) => {
-        setTransactions(transactions.filter((t) => t.id !== id));
-    };
-
-    // 4. Actions: Batch Groups (Finalize/Delete History)
-    const finalizeGroup = (name) => {
+    const finalizeGroup = () => {
         if (transactions.length === 0) return;
 
-        const newGroup = {
-            id: Date.now(),
-            name: name || groupName || "Untitled Group",
+        const updatedData = {
+            id: editingGroupId || Date.now(), // अगर एडिट कर रहे हैं तो पुरानी ID, वरना नई
+            name: groupName || "Untitled Group",
             items: transactions,
             total: transactions.reduce((acc, t) => acc + t.amount, 0),
             date: new Date().toLocaleDateString('en-GB')
         };
 
-        setGroups([newGroup, ...groups]);
+        if (editingGroupId) {
+            // REWRITE LOGIC: पुराने वाले को हटाकर नया अपडेटेड डेटा डालना
+            setGroups(groups.map(g => g.id === editingGroupId ? updatedData : g));
+        } else {
+            setGroups([updatedData, ...groups]);
+        }
+
+        // Cleanup
         setTransactions([]);
         setGroupName("");
         setIsGroupActive(false);
+        setEditingGroupId(null);
     };
 
-    const deleteGroup = (id) => {
-        setGroups(groups.filter((group) => group.id !== id));
-    };
+    const deleteGroup = (id) => setGroups(groups.filter((group) => group.id !== id));
 
-    // 5. Context Provider Wrap
     return (
         <GlobalContext.Provider value={{
-            // Data States
-            transactions,
-            groups,
-
-            // UI States
-            groupName,
-            setGroupName,
-            isGroupActive,
-            setIsGroupActive,
-
-            // Methods
-            addTransaction,
-            deleteTransaction,
-            finalizeGroup,
-            deleteGroup
+            transactions, groups, groupName, setGroupName, isGroupActive, setIsGroupActive,
+            addTransaction, deleteTransaction, finalizeGroup, deleteGroup,
+            editGroup, editingGroupId // इन दोनों को एक्सपोर्ट करना न भूलें
         }}>
             {children}
         </GlobalContext.Provider>

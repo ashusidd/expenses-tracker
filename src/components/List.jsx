@@ -11,28 +11,31 @@ export const List = () => {
         groupName,
         setGroupName,
         deleteGroup,
-        deleteTransaction
+        deleteTransaction,
+        editGroup, // नया फंक्शन context से
+        editingGroupId // स्टेट context से
     } = useContext(GlobalContext);
 
     const activeTotal = (transactions || []).reduce((acc, item) => (acc += item.amount), 0).toFixed(2);
 
     const handleFinalize = () => {
-        finalizeGroup(groupName);
-        setIsGroupActive(false);
-        setGroupName("");
+        finalizeGroup(); // अब नाम भेजने की ज़रूरत नहीं, context खुद संभाल लेगा
     };
 
     return (
         <div className="mt-8 space-y-10 animate-fade-in">
             {isGroupActive && (
-                <section className="bg-white rounded-3xl overflow-hidden shadow-1xl shadow-indigo-100 border border-indigo-50 transition-all duration-500 animate-zoom-in">
+                <section className="bg-white rounded-3xl overflow-hidden shadow-1xl shadow-indigo-100 border border-indigo-50 transition-all duration-500 animate-zoom-in relative">
                     {/* Header */}
                     <div className="bg-indigo-600 px-6 py-4 flex justify-between items-center bg-gradient-to-r from-indigo-600 to-violet-600">
                         <h2 className="text-white font-bold tracking-tight flex items-center gap-2">
                             <span className="p-1.5 bg-white/20 rounded-lg backdrop-blur-md">📁</span>
                             {groupName}
                         </h2>
-                        <span className="bg-white/20 text-white text-[10px] px-2.5 py-1 rounded-md font-black animate-pulse tracking-widest">LIVE</span>
+                        {/* अगर एडिट कर रहे हैं तो RE-EDITING दिखाएँ वरना LIVE */}
+                        <span className="bg-white/20 text-white text-[10px] px-2.5 py-1 rounded-md font-black animate-pulse tracking-widest">
+                            {editingGroupId ? "RE-EDITING" : "LIVE"}
+                        </span>
                     </div>
 
                     {/* Transaction List */}
@@ -75,14 +78,14 @@ export const List = () => {
                                 onClick={handleFinalize}
                                 className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-black shadow-xl shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-0.5 transition-all active:scale-95 cursor-pointer"
                             >
-                                SAVE & FINALIZE GROUP
+                                {editingGroupId ? "UPDATE & SAVE CHANGES" : "SAVE & FINALIZE GROUP"}
                             </button>
                         )}
                     </div>
                 </section>
             )}
 
-            {/* 2. History Group(Responsive Grid Layout) */}
+            {/* History Section */}
             <section className="space-y-6">
                 <div className="flex items-center gap-4 px-1">
                     <h2 className="text-slate-400 font-black text-[10px] uppercase tracking-[0.3em] whitespace-nowrap">Saved History</h2>
@@ -98,15 +101,26 @@ export const List = () => {
                         {groups.map(group => (
                             <div key={group.id} className="bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group overflow-hidden">
                                 <div className="p-4 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
-                                    <span className="font-bold text-slate-700 truncate max-w-[180px] flex items-center gap-2">
+                                    <span className="font-bold text-slate-700 truncate max-w-[150px] flex items-center gap-2">
                                         <span className="text-sm">📁</span> {group.name}
                                     </span>
-                                    <button
-                                        onClick={() => window.confirm("Delete this group history?") && deleteGroup(group.id)}
-                                        className="bg-blue-300 text-slate-600 hover:text-red-500 hover:shadow-md w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer"
-                                    >
-                                        ✕
-                                    </button>
+
+                                    {/* Action Buttons */}
+                                    <div className="flex items-center gap-2">
+                                        {/* RESUME/EDIT BUTTON */}
+                                        <button
+                                            onClick={() => editGroup(group)}
+                                            className="bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white px-3 py-1 rounded-lg text-[9px] font-black uppercase transition-all cursor-pointer shadow-sm"
+                                        >
+                                            Resume
+                                        </button>
+                                        <button
+                                            onClick={() => window.confirm("Delete this group history?") && deleteGroup(group.id)}
+                                            className="bg-white text-slate-300 hover:text-red-500 hover:shadow-md w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <div className="p-5">
