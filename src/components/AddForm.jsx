@@ -51,7 +51,7 @@ export const AddForm = () => {
     return (
         <form
             onSubmit={handleAdd}
-            className="mt-8 bg-white p-6 rounded-3xl shadow-2xl "
+            className="mt-8 bg-white p-6 rounded-3xl shadow-2xl relative"
         >
             {/* Background Decoration */}
             <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-slate-50 rounded-full blur-3xl opacity-50" />

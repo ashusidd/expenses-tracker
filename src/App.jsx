@@ -5,7 +5,7 @@ import { List } from "./components/List";
 function App() {
   return (
     <GlobalProvider>
-      <div className="min-h-screen bg-slate-950 bg-linear-to-b from-slate-900 via-indigo-950 to-slate-950 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen overflow-x-hidden bg-slate-950 bg-linear-to-b from-slate-900 via-indigo-950 to-slate-950 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mx-auto">
 
           {/* Header Section */}
