@@ -1,7 +1,6 @@
 import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { GlobalContext } from "../context/GlobalContext";
-// 1. Corrected Imports: Use 'autoTable' directly
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -21,12 +20,10 @@ export const List = ({ type }) => {
 
     const activeTotal = (transactions || []).reduce((acc, item) => (acc += item.amount), 0).toFixed(2);
 
-    // 2. Fixed PDF Function: Uses autoTable(doc, ...)
     const downloadPDF = (group) => {
         try {
             const doc = new jsPDF();
 
-            // Header styling
             doc.setFontSize(20);
             doc.setTextColor(79, 70, 229);
             doc.text("ASHUTRACKS - EXPENSE REPORT", 14, 20);
@@ -34,25 +31,24 @@ export const List = ({ type }) => {
             doc.setFontSize(10);
             doc.setTextColor(100);
             doc.text(`Group: ${group.name}`, 14, 30);
-            doc.text(`Date: ${group.date}`, 14, 35);
+            doc.text(`Date Created: ${group.date}`, 14, 35); // Group Creation Date
 
-            // Preparing rows for the table
+            // Updated Table: Added Date column in PDF
             const tableRows = group.items.map(item => [
+                item.date || group.date, // Showing item date or fallback to group date
                 item.time,
                 item.text,
                 item.category || "Others",
                 `Rs. ${item.amount}`
             ]);
 
-            // Corrected usage: autoTable(doc, { ... })
             autoTable(doc, {
-                head: [['Time', 'Item', 'Category', 'Price']],
+                head: [['Date', 'Time', 'Item', 'Category', 'Price']],
                 body: tableRows,
                 startY: 45,
                 headStyles: { fillColor: [79, 70, 229] },
             });
 
-            // Summary at the bottom
             const lastY = doc.lastAutoTable.finalY;
             doc.setFontSize(14);
             doc.setTextColor(0);
@@ -61,7 +57,7 @@ export const List = ({ type }) => {
             doc.save(`${group.name}_Bill.pdf`);
         } catch (error) {
             console.error("PDF Error:", error);
-            alert("Error generating PDF. Please check console.");
+            alert("Error generating PDF.");
         }
     };
 
@@ -76,9 +72,9 @@ export const List = ({ type }) => {
     return (
         <div className="mt-8 space-y-10 animate-fade-in">
 
-            {/* --- LIVE SECTION (Home Page) --- */}
+            {/* --- LIVE SECTION --- */}
             {type === "live" && isGroupActive && (
-                <section className="bg-white/70 dark:bg-slate-900/80 backdrop-blur-xl rounded-[2.5rem] overflow-hidden shadow-2xl border border-white dark:border-slate-800 transition-all animate-zoom-in relative">
+                <section className="bg-white/70 dark:bg-slate-900/80 backdrop-blur-xl rounded-[2.5rem] overflow-hidden shadow-2xl border border-white dark:border-slate-800 relative">
                     <div className="bg-gradient-to-r from-indigo-600 to-violet-600 px-8 py-6 flex justify-between items-center">
                         <h2 className="text-white font-bold flex items-center gap-3">
                             <span className="p-2 bg-white/20 rounded-xl text-lg">📁</span> {groupName}
@@ -101,13 +97,16 @@ export const List = ({ type }) => {
                                             </span>
                                             <span className="font-bold text-slate-800 dark:text-slate-200 text-lg">{t.text}</span>
                                         </div>
-                                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{t.time}</span>
+                                        {/* FIXED: Showing Date and Time both */}
+                                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                                            {t.date ? `${t.date} | ` : ""}{t.time}
+                                        </span>
                                     </div>
                                     <div className="flex items-center gap-5">
                                         <span className={`font-mono font-black text-xl ${t.amount < 0 ? "text-rose-500" : "text-emerald-500"}`}>
                                             {t.amount < 0 ? "" : "+"}{t.amount}
                                         </span>
-                                        <button onClick={() => deleteTransaction(t.id)} className="w-10 h-10 rounded-full bg-slate-50 dark:bg-slate-800 text-slate-500 hover:text-rose-500 transition-all flex items-center justify-center border border-transparent hover:border-rose-100">✕</button>
+                                        <button onClick={() => deleteTransaction(t.id)} className="w-10 h-10 rounded-full bg-slate-50 dark:bg-slate-800 text-slate-500 hover:text-rose-500 transition-all flex items-center justify-center">✕</button>
                                     </div>
                                 </li>
                             ))
@@ -128,7 +127,7 @@ export const List = ({ type }) => {
                 </section>
             )}
 
-            {/* --- HISTORY SECTION (Vault) --- */}
+            {/* --- HISTORY SECTION --- */}
             {type === "history" && (
                 <section className="space-y-8">
                     <div className="flex items-center gap-6 px-2">
@@ -141,15 +140,14 @@ export const List = ({ type }) => {
                             <p className="text-slate-300 dark:text-slate-700 font-black uppercase text-xs">Your vault is empty</p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-slide-in-bottom">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {groups.map(group => (
-                                <div key={group.id} className="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 group overflow-hidden">
+                                <div key={group.id} className="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-2xl transition-all duration-500 group overflow-hidden">
                                     <div className="p-5 border-b border-slate-50 dark:border-slate-800/50 flex justify-between items-center bg-slate-50/30 dark:bg-slate-950/20">
                                         <span className="font-bold text-slate-700 dark:text-slate-300 truncate max-w-[140px] flex items-center gap-2 text-sm uppercase tracking-tight">
                                             <span className="text-lg">📁</span> {group.name}
                                         </span>
                                         <div className="flex items-center gap-2">
-                                            {/* PDF Button */}
                                             <button onClick={() => downloadPDF(group)} className="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all shadow-sm active:scale-90 cursor-pointer">PDF 📥</button>
                                             <button onClick={() => handleResume(group)} className="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all shadow-sm active:scale-90 cursor-pointer">Resume</button>
                                             <button onClick={() => window.confirm("Delete?") && deleteGroup(group.id)} className="w-8 h-8 rounded-full bg-white dark:bg-slate-800 text-slate-500 hover:text-rose-500 transition-all flex items-center justify-center border border-slate-50 dark:border-slate-700 cursor-pointer">✕</button>
@@ -157,12 +155,22 @@ export const List = ({ type }) => {
                                     </div>
 
                                     <div className="p-6">
+                                        {/* Shows Date of Group Creation */}
+                                        <div className="mb-4">
+                                            <span className="text-[9px] font-black text-slate-400 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-full uppercase">
+                                                Created on: {group.date}
+                                            </span>
+                                        </div>
+
                                         <ul className="space-y-3 mb-6">
                                             {group.items.slice(0, 3).map(item => (
                                                 <li key={item.id} className="flex justify-between text-[11px] text-slate-500 dark:text-slate-400 font-bold tracking-tight bg-slate-50/50 dark:bg-slate-800/30 px-3 py-2 rounded-lg">
-                                                    <span className="flex items-center gap-1">
-                                                        <span className="opacity-50 text-[9px]">[{item.category || 'Others'}]</span>
-                                                        {item.text}
+                                                    <span className="flex flex-col">
+                                                        <span className="flex items-center gap-1">
+                                                            <span className="opacity-50 text-[9px]">[{item.category || 'Others'}]</span>
+                                                            {item.text}
+                                                        </span>
+                                                        <span className="text-[8px] opacity-60">{item.date} | {item.time}</span>
                                                     </span>
                                                     <span className={item.amount < 0 ? "text-rose-400" : "text-emerald-400"}>₹{item.amount}</span>
                                                 </li>
@@ -173,9 +181,6 @@ export const List = ({ type }) => {
                                                 <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest">Net Balance</p>
                                                 <p className="text-2xl font-black text-slate-900 dark:text-white font-mono">₹{group.total}</p>
                                             </div>
-                                            <span className="text-[9px] font-black text-slate-400 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-full uppercase">
-                                                {group.date}
-                                            </span>
                                         </div>
                                     </div>
                                 </div>
