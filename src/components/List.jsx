@@ -20,6 +20,9 @@ export const List = ({ type }) => {
 
     const activeTotal = (transactions || []).reduce((acc, item) => (acc += item.amount), 0).toFixed(2);
 
+    // Get today's date for live entries that might not have a saved date yet
+    const todayDate = new Date().toLocaleDateString('en-GB');
+
     const downloadPDF = (group) => {
         try {
             const doc = new jsPDF();
@@ -31,11 +34,10 @@ export const List = ({ type }) => {
             doc.setFontSize(10);
             doc.setTextColor(100);
             doc.text(`Group: ${group.name}`, 14, 30);
-            doc.text(`Date Created: ${group.date}`, 14, 35); // Group Creation Date
+            doc.text(`Date Created: ${group.date}`, 14, 35);
 
-            // Updated Table: Added Date column in PDF
             const tableRows = group.items.map(item => [
-                item.date || group.date, // Showing item date or fallback to group date
+                item.date || group.date,
                 item.time,
                 item.text,
                 item.category || "Others",
@@ -76,9 +78,14 @@ export const List = ({ type }) => {
             {type === "live" && isGroupActive && (
                 <section className="bg-white/70 dark:bg-slate-900/80 backdrop-blur-xl rounded-[2.5rem] overflow-hidden shadow-2xl border border-white dark:border-slate-800 relative">
                     <div className="bg-gradient-to-r from-indigo-600 to-violet-600 px-8 py-6 flex justify-between items-center">
-                        <h2 className="text-white font-bold flex items-center gap-3">
-                            <span className="p-2 bg-white/20 rounded-xl text-lg">📁</span> {groupName}
-                        </h2>
+                        <div className="flex flex-col">
+                            <h2 className="text-white font-bold flex items-center gap-3">
+                                <span className="p-2 bg-white/20 rounded-xl text-lg">📁</span> {groupName}
+                            </h2>
+                            <span className="text-[9px] text-indigo-100 font-medium mt-1 ml-12 opacity-90 uppercase tracking-wider">
+                                Created on: {transactions.length > 0 && transactions[0].date ? transactions[0].date : todayDate}
+                            </span>
+                        </div>
                         <span className="bg-white/20 text-white text-[10px] px-3 py-1.5 rounded-full font-black animate-pulse uppercase tracking-widest border border-white/20">
                             {editingGroupId ? "RE-EDITING" : "LIVE BATCH"}
                         </span>
@@ -97,9 +104,8 @@ export const List = ({ type }) => {
                                             </span>
                                             <span className="font-bold text-slate-800 dark:text-slate-200 text-lg">{t.text}</span>
                                         </div>
-                                        {/* FIXED: Showing Date and Time both */}
-                                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                                            {t.date ? `${t.date} | ` : ""}{t.time}
+                                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+                                            {t.date || todayDate} <span className="mx-1">|</span> {t.time}
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-5">
@@ -155,9 +161,8 @@ export const List = ({ type }) => {
                                     </div>
 
                                     <div className="p-6">
-                                        {/* Shows Date of Group Creation */}
                                         <div className="mb-4">
-                                            <span className="text-[9px] font-black text-slate-400 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-full uppercase">
+                                            <span className="text-[9px] font-black text-slate-400 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-full uppercase tracking-widest">
                                                 Created on: {group.date}
                                             </span>
                                         </div>
@@ -170,7 +175,10 @@ export const List = ({ type }) => {
                                                             <span className="opacity-50 text-[9px]">[{item.category || 'Others'}]</span>
                                                             {item.text}
                                                         </span>
-                                                        <span className="text-[8px] opacity-60">{item.date} | {item.time}</span>
+                                                        {/* FIXED: Added clear separator and styling for history items */}
+                                                        <span className="text-[9px] opacity-70 mt-1 uppercase tracking-wider">
+                                                            {item.date || group.date} <span className="mx-1">|</span> {item.time}
+                                                        </span>
                                                     </span>
                                                     <span className={item.amount < 0 ? "text-rose-400" : "text-emerald-400"}>₹{item.amount}</span>
                                                 </li>
