@@ -24,13 +24,20 @@ export const GlobalProvider = ({ children }) => {
         localStorage.setItem('pendingLive', JSON.stringify(pendingLive));
     }, [transactions, groups, groupName, isGroupActive, editingGroupId, pendingLive]);
 
-    // Add single expense item to current list
-    const addTransaction = (newTrans) => setTransactions([newTrans, ...transactions]);
+    // 3. Add single expense item to current list (FIXED: Auto-injecting current date)
+    const addTransaction = (newTrans) => {
+        const transactionWithDate = {
+            ...newTrans,
+            // If date doesn't exist, strictly attach today's date to this specific item
+            date: newTrans.date || new Date().toLocaleDateString('en-GB')
+        };
+        setTransactions([transactionWithDate, ...transactions]);
+    };
 
     // Delete single expense item
     const deleteTransaction = (id) => setTransactions(transactions.filter((t) => t.id !== id));
 
-    // 3. Resume Logic: Switch from Live work to History editing
+    // 4. Resume Logic: Switch from Live work to History editing
     const editGroup = (group) => {
         // If current batch is unsaved, "Pause" it and store in pendingLive
         if (transactions.length > 0 && !editingGroupId) {
@@ -47,9 +54,12 @@ export const GlobalProvider = ({ children }) => {
         setIsGroupActive(true);
     };
 
-    // 4. Save Logic: Finalize batch and restore "Paused" work if any
+    // 5. Save Logic: Finalize batch and restore "Paused" work if any (FIXED: Preserving old dates)
     const finalizeGroup = () => {
         if (transactions.length === 0) return;
+
+        // Find existing group to grab its original creation date
+        const existingGroup = editingGroupId ? groups.find(g => g.id === editingGroupId) : null;
 
         // Prepare group data object
         const updatedData = {
@@ -57,7 +67,8 @@ export const GlobalProvider = ({ children }) => {
             name: groupName || "Untitled Group",
             items: transactions,
             total: transactions.reduce((acc, t) => acc + t.amount, 0),
-            date: new Date().toLocaleDateString('en-GB')
+            // FIXED: Only assign a NEW date if it's a new group. Otherwise, keep the old date.
+            date: existingGroup ? existingGroup.date : new Date().toLocaleDateString('en-GB')
         };
 
         // Update existing group or add as new history
